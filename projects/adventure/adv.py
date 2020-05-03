@@ -14,8 +14,8 @@ world = World()
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+#map_file = "maps/test_loop_fork.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -81,25 +81,18 @@ traversal_path = []
 graph = Graph()
 
 
-
-#Gives random room
-def rand_direction(exits):
-    num_of_exits = len(exits)
-    random_num = random.randint(0, num_of_exits -1)
-    direction = exits[random_num]
-    return direction
-
-
+#Going to use this to store the dict of {room.id{direction:next_room.id}}
 room_and_exits = {}
+#This will be used to backtrack for dead ends. 
 back_steps = Stack()
+#Dict that gives you the opposite direction. 
 reverse_direction = {'n':'s', 's':'n', 'w':'e', 'e':'w'}
 
 
-#Builds the dict 
-def get_exits():
+#Builds the dict for the exits...{'n':'?', 's':'?'}
+def dict_of_exits():
     #Get all exits for current room
     exits = player.current_room.get_exits()
-
     exit_list = {}
     for each_exit in exits:
         exit_list.update({
@@ -107,7 +100,7 @@ def get_exits():
         })
     return exit_list
 
-
+#Goes thru the exit_list and looks for '?'. If it finds one, it returns that direction. If not it returns None
 def get_next_direction(exit_list, curr_room):
     for direction, room_id in exit_list.items():#Loop through exit list
         next_room = curr_room.get_room_in_direction(direction)
@@ -116,42 +109,32 @@ def get_next_direction(exit_list, curr_room):
     return None
 
 
-
-
-# total_current_stuff = {curr_room: exit_list}
-# print(total_current_stuff)
-
-
-def explore_world():
+def explore_maze():
     count = 0
-    while len(room_and_exits) < len(world.rooms) and count < 2:
-
-        curr_room = player.current_room
-        if curr_room.id not in room_and_exits:
-            exit_list = get_exits()
+    while len(room_and_exits) < len(world.rooms) and count < 2000:#Runs until all rooms explorex, or count reaches 2000
+        curr_room = player.current_room#Get current room
+        if curr_room.id not in room_and_exits:#Adds the id of the current room to the dict
+            exit_list = dict_of_exits()
             room_and_exits[curr_room.id] = exit_list
         next_direction = get_next_direction(room_and_exits[curr_room.id], curr_room)
-        print(f"Room id {curr_room.id}")
-        print(f"Next direction = {next_direction}")
-        print(f"dict = {room_and_exits}")
-        print()
+        #If we reach a dead, end this pops a direction off the back_steps stack so we can go back to that room and run the scripts on it again
         if next_direction == None:
-            while back_steps.size() > 0:
-                direction = back_steps.pop()
-                traversal_path.append(direction)
-                player.travel(direction)
+                direction = back_steps.pop()#Pop a previous (opposite) direction off the stack
+                traversal_path.append(direction)#Add direction to traversal_path
+                player.travel(direction)#Make player go that direction
                 count += 1
+        #If we are given a next direction from get_next_direction do stuff....
         else:
-            next_room = curr_room.get_room_in_direction(next_direction)
-            room_and_exits[curr_room.id][next_direction] = next_room.id
-            back_steps.push(reverse_direction[next_direction])
-            traversal_path.append(next_direction)
-            player.travel(next_direction)
+            next_room = curr_room.get_room_in_direction(next_direction)#Grab info about room in next_direction
+            room_and_exits[curr_room.id][next_direction] = next_room.id#Add next_room.id to the room_and_exits dict for that next_direction
+            back_steps.push(reverse_direction[next_direction])#Push this next_direction with reverse_direction dict to reverse it into the back_steps Stack.
+            traversal_path.append(next_direction)#Add next_direction to the traversal_path
+            player.travel(next_direction)#Move player to the next_direction
             count += 1
 
 
 
-explore = explore_world()
+explore = explore_maze()
 
 
 #Get room in direction
