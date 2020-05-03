@@ -15,14 +15,19 @@ class Graph:
         """
         self.vertices[vertex_id] = set()
 
-    def add_edge(self, v1, v2):
+    def add_edge(self, v1, v2, weight=0):
         """
         Add a directed edge to the graph.
         """
         if v1 in self.vertices and v2 in self.vertices:
-            self.vertices[v1].add(v2)
+                self.vertices[v1].add(v2)
+
         else:
             raise IndexError("That vertex does not exist!")
+    
+    # def add_weight(self, v1, v2, weight):
+
+    #     self.vertices[v1][0].add(weight)
 
     def get_neighbors(self, vertex_id):
         """
@@ -97,6 +102,7 @@ class Graph:
         """
         # create a empty queue, and enqueue a PATH to the starting vertex
         neighbors_to_visit = Queue()
+        #Here we store the path in the Queue. Will look like this [1] then this [1,2] then this [1,2,3] and so on each loop
         neighbors_to_visit.enqueue([starting_vertex])
         # create a set for visited vertices
         visited_vertices = set()
@@ -177,7 +183,8 @@ if __name__ == '__main__':
     graph.add_edge(2, 4)
     graph.add_edge(3, 5)
     graph.add_edge(2, 3)
-    graph.add_edge(4, 6)
+    graph.add_edge(4, 6, 10)
+
 
     '''
     Should print:
